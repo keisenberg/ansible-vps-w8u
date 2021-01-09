@@ -1,0 +1,104 @@
+#!/usr/bin/env bash
+## run :: Run (helper)
+
+#
+## Initialization :: Variables :: Static
+
+# Variable modification :: SSH :: Options
+sr_ssh_options='-o ConnectTimeout=2 -o ControlMaster=no -o ControlPath=none -o StrictHostKeyChecking=false -o UserKnownHostsFile=/dev/null -F /dev/null'
+
+#
+## Initialization :: Variables :: Dynamic
+
+# Variable modification :: Script :: Short name
+readonly sr_script_sn="$(basename "${BASH_SOURCE[0]}")"
+
+# Variable modification :: Script :: Resolved absolute path name
+readonly sr_script_rapn="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
+
+#
+## Preprocess :: Phase 0 // Validate input | environment
+
+# Validate :: Input variable :: Host target
+if [[ -n "$1" ]]; then
+    # Variable modification :: Host target
+    readonly sr_ht="$1"
+else
+    # Notify :: Validation failure
+    printf '%s\n' "FAIL :: Input missing :: \$1 :: Host target :: $sr_script_sn/$LINENO"
+
+    # Action :: Exit ungracefully
+    exit 1
+fi
+
+# Validate :: Input variable :: Host password
+if [[ -n "$2" ]]; then
+    # Variable modification :: Host password
+    readonly sr_ht_password="$2"
+fi
+
+# Validate :: Directory existence :: Build reference
+if [[ ! -e "$sr_script_rapn/../site.yml" ]]; then
+    # Notify :: Validation failure
+    printf '%s\n' "FAIL :: Playbook missing :: provision_preprocess/site.yml :: $sr_script_rapn/../site.yml :: $sr_script_sn/$LINENO"
+
+    # Action :: Exit ungracefully
+    exit 1
+fi
+
+#
+## Preprocess :: Phase 1 // Initialize connection profile
+
+# Test :: Connection profile :: pubkey-obfuscated-22
+# shellcheck disable=SC2086
+if [[ "$(ssh $sr_ssh_options -o Port=22 -o PreferredAuthentications=publickey -o PubkeyAuthentication=yes -o User=obfuscated "$sr_ht" -q echo 'CONNECTION_TEST')" ]]; then
+    # Variable modification :: Host target :: Connection profile
+    readonly sr_ht_cp='pubkey-obfuscated-22'
+fi
+
+# Test :: Connection profile :: pubkey-root-22
+# shellcheck disable=SC2086
+if [[ -z "$sr_ht_cp" ]] && [[ "$(ssh $sr_ssh_options -o Port=22 -o PreferredAuthentications=publickey -o PubkeyAuthentication=yes -o User=root "$sr_ht" -q echo 'CONNECTION_TEST')" ]]; then
+    # Variable modification :: Host target :: Connection profile
+    readonly sr_ht_cp='pubkey-root-22'
+fi
+
+# Test :: Connection profile :: password-root-22
+# shellcheck disable=SC2086
+if [[ -z "$sr_ht_cp" ]] && [[ -n "$sr_ht_password" ]] && [[ "$(sshpass -p"$sr_ht_password" ssh $sr_ssh_options -o Port=22 -o PreferredAuthentications=keyboard-interactive,password -o PubkeyAuthentication=no -o User=root "$sr_ht" -q echo 'CONNECTION_TEST')" ]]; then
+    # Variable modification :: Host target :: Connection profile
+    readonly sr_ht_cp='password-root-22'
+fi
+
+#
+## Preprocess :: Phase 2 // Validate connection profile
+
+# Validate :: Existence connection profile
+if [[ -z "$sr_ht_cp" ]]; then
+    # Notify :: Initialization failure
+    printf '%s\n' "FAIL :: Initialize :: Connection profile :: Could not determine connection profile :: $sr_script_sn/$LINENO"
+
+    # Action :: Exit ungracefully
+    exit 1
+fi
+
+#
+## Main :: Phase 0 // Run playbook :: provision_preprocess
+
+# Validate :: Connection profile
+if [[ "$sr_ht_cp" =~ ^pubkey-obfuscated-22$ ]]; then
+    # Action :: Run Ansible playbook
+    ansible-playbook --extra-vars 'ansible_become=true' --extra-vars 'ansible_user=obfuscated' --extra-vars "host_target=$sr_ht" --inventory "$sr_ht," --ssh-common-args '-o StrictHostKeyChecking=false -o UserKnownHostsFile=/dev/null -F /dev/null' "$sr_script_rapn/../site.yml"
+fi
+
+# Validate :: Connection profile
+if [[ "$sr_ht_cp" =~ ^pubkey-root-22$ ]]; then
+    # Action :: Run Ansible playbook
+    ansible-playbook --extra-vars "ansible_user=root" --extra-vars "host_target=$sr_ht" --inventory "$sr_ht," --ssh-common-args '-o StrictHostKeyChecking=false -o UserKnownHostsFile=/dev/null -F /dev/null' "$sr_script_rapn/../site.yml"
+fi
+
+# Validate :: Connection profile
+if [[ "$sr_ht_cp" =~ ^password-root-22$ ]]; then
+    # Action :: Run Ansible playbook
+    ansible-playbook --extra-vars "ansible_password=$sr_ht_password" --extra-vars "ansible_user=root" --extra-vars "host_target=$sr_ht" --inventory "$sr_ht," --ssh-common-args '-o StrictHostKeyChecking=false -o UserKnownHostsFile=/dev/null -F /dev/null' "$sr_script_rapn/../site.yml"
+fi

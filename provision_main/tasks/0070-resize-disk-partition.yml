@@ -1,0 +1,17 @@
+---
+
+- block:
+  - name: '{{ outer_item.split(".yml")[0] | basename }} | command | growpart | {{ node_disk_device_primary }}{{ node_disk_partition_primary }} | 9d51fa24'
+    command:
+      cmd: 'growpart {{ node_disk_device_primary }} {{ node_disk_partition_primary }}'
+
+  - name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.copy | {{ playbook_task_run_file }} | Write task run state | 76f09111'
+    ansible.builtin.copy:
+      content: '0070'
+      dest: '{{ playbook_task_run_file }}'
+      group: 'root'
+      mode: 0600
+      owner: 'root'
+    changed_when: false
+
+  when: playbook_task_run | int < 0070

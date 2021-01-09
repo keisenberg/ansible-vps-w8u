@@ -1,0 +1,9 @@
+---
+
+- name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.template | /etc/grub.d/40_custom | 03c4da46'
+  ansible.builtin.template:
+    src: 'templates/{{ outer_item.split(".yml")[0] | basename }}/40_custom.j2'
+    dest: '/etc/grub.d/40_custom'
+    owner: 'root'
+    group: 'root'
+    mode: 0755

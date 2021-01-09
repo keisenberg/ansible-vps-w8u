@@ -1,0 +1,46 @@
+---
+
+- block:
+  - name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.file | Create directory | /mnt/default | 8c8b3ec4'
+    ansible.builtin.file:
+      path: '/mnt/default'
+      state: 'directory'
+
+  - name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.posix.mount | Mount filesystems | e485e9ca'
+    ansible.posix.mount:
+      fstype: '{{ item.fstype }}'
+      opts: '{{ item.opts }}'
+      path: '{{ item.path }}'
+      src: '{{ item.src }}'
+      state: 'mounted'
+    with_items:
+      - { fstype: 'xfs', opts: 'rw', path: '/mnt/default', src: '/dev/mapper/default-root' }
+      - { fstype: 'xfs', opts: 'rw', path: '/mnt/default/home', src: '/dev/mapper/default-home' }
+      - { fstype: 'xfs', opts: 'rw', path: '/mnt/default/tmp', src: '/dev/mapper/default-tmp' }
+      - { fstype: 'xfs', opts: 'rw', path: '/mnt/default/var', src: '/dev/mapper/default-var' }
+      - { fstype: 'ext2', opts: 'rw', path: '/mnt/default/boot', src: '{{ node_disk_device_primary }}2' }
+      - { fstype: 'none', opts: 'bind', path: '/mnt/default/dev', src: '/dev' }
+      - { fstype: 'none', opts: 'bind', path: '/mnt/default/proc', src: '/proc' }
+      - { fstype: 'none', opts: 'bind', path: '/mnt/default/sys', src: '/sys' }
+
+  - name: '{{ outer_item.split(".yml")[0] | basename }} | community.general.filesystem | Resize filesystems | 74b5179c'
+    community.general.filesystem:
+      dev: '{{ item.dev }}'
+      fstype: '{{ item.fstype }}'
+      resizefs: true
+    with_items:
+      - { dev: '/dev/mapper/default-root', fstype: 'xfs' }
+      - { dev: '/dev/mapper/default-home', fstype: 'xfs' }
+      - { dev: '/dev/mapper/default-tmp', fstype: 'xfs' }
+      - { dev: '/dev/mapper/default-var', fstype: 'xfs' }
+
+  - name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.copy | {{ playbook_task_run_file }} | Write task run state | 461f0a90'
+    ansible.builtin.copy:
+      content: '0100'
+      dest: '{{ playbook_task_run_file }}'
+      group: 'root'
+      mode: 0600
+      owner: 'root'
+    changed_when: false
+
+  when: playbook_task_run | int < 0100

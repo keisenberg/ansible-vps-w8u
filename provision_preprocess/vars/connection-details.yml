@@ -1,0 +1,4 @@
+---
+
+# // TODO :: Add commentary
+ansible_python_interpreter: 'auto_silent'

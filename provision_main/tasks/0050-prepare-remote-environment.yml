@@ -1,0 +1,34 @@
+---
+
+- block:
+    - name: '{{ outer_item.split(".yml")[0] | basename }} | shell | ssh-keyscan | cdb583de'
+      shell:
+        cmd: 'ssh-keyscan obfuscated.domain.tld > /root/.ssh/known_hosts'
+        creates: '/root/.ssh/known_hosts'
+
+    - name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.copy | OpenSSH public key | f156a44d'
+      ansible.builtin.copy:
+        content: "{{ lookup('community.general.passwordstore', 'svc.vps.domain.tld/provision/ssh/ed25519-obfuscated/identity.pub') + '\n' }}"
+        dest: '/root/.ssh/id_ed25519.pub'
+        group: 'root'
+        mode: 0644
+        owner: 'root'
+
+    - name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.copy | OpenSSH private key | 7a956dbc'
+      ansible.builtin.copy:
+        dest: '/root/.ssh/id_ed25519'
+        content: "{{ lookup('community.general.passwordstore', 'svc.vps.domain.tld/provision/ssh/ed25519-obfuscated/identity returnall=true') }}"
+        group: 'root'
+        mode: 0600
+        owner: 'root'
+
+    - name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.copy | {{ playbook_task_run_file }} | Write task run state | 30166e3b'
+      ansible.builtin.copy:
+        content: '0050'
+        dest: '{{ playbook_task_run_file }}'
+        group: 'root'
+        mode: 0600
+        owner: 'root'
+      changed_when: false
+
+  when: playbook_task_run | int < 0050

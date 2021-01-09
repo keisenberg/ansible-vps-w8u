@@ -1,0 +1,22 @@
+---
+
+- block:
+    - name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.get_url | Download :: aanp-latest-x86_64 | 93d15183'
+      ansible.builtin.get_url:
+        checksum: 'sha512:obfuscated'
+        dest: '/boot/aanp-latest-x86_64.iso'
+        tmp_dest: '/boot'
+        url: 'https://obfuscated.domain.tld/aanp-latest-x86_64.iso'
+        url_username: 'obfuscated'
+        url_password: "{{ lookup('community.general.passwordstore', 'obfuscated.domain.tld/user/obfuscated')}}"
+
+    - name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.copy | {{ playbook_task_run_file }} | Write task run state | dd20f5fb'
+      ansible.builtin.copy:
+        dest: '{{ playbook_task_run_file }}'
+        owner: 'root'
+        group: 'root'
+        mode: 0600
+        content: '0030'
+      changed_when: false
+
+  when: playbook_task_run | int < 0030

@@ -1,0 +1,24 @@
+---
+
+- name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.set_fact | playbook_task_run | 6a7b97eb'
+  ansible.builtin.set_fact:
+    playbook_task_run: '0000'
+
+- name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.stat | {{ playbook_task_run_file }} | 836176ce'
+  ansible.builtin.stat:
+    path: '{{ playbook_task_run_file }}'
+  register: register_836176ce
+
+- block:
+    - name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.slurp | {{ playbook_task_run_file }} | c501c516'
+      ansible.builtin.slurp:
+        src: '{{ playbook_task_run_file }}'
+      register: register_c501c516
+
+    - name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.set_fact | playbook_task_run | c501c516'
+      ansible.builtin.set_fact:
+        playbook_task_run: "{{ register_c501c516.content | b64decode | trim }}"
+
+  when:
+    - register_836176ce is defined
+    - register_836176ce.stat.exists is true

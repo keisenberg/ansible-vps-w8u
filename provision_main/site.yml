@@ -1,0 +1,41 @@
+---
+
+- name: '{{ git_repository_name }} | {{ playbook_dir | basename }}'
+  hosts: '{{ host_target }}'
+  gather_facts: true
+
+  vars:
+    git_repository_name: "{{ lookup('pipe', 'git rev-parse --show-toplevel') | basename }}"
+    playbook_name: '{{ ansible_play_name.split(" | ")[1] }}'
+    playbook_task_run_file: '/run/{{ git_repository_name }}-{{ playbook_name }}.tr'
+
+  vars_files:
+    - 'vars/connection-details.yml'
+
+  vars_prompt:
+    - name: host_target
+      prompt: 'Specify target hostname'
+      private: 'no'
+
+    - name: image_stream_reference
+      prompt: 'Specify image stream reference'
+      private: 'no'
+
+  pre_tasks:
+  - name: 'site | ansible.builtin.add_host | {{ host_target }} | 0e5b97c4'
+    ansible.builtin.add_host:
+      hostname: '{{ host_target }}'
+    changed_when: false
+
+  tasks:
+    - block:
+        - name: 'site | include_tasks | lookup | fileglob | e51661eb'
+          include_tasks: '{{ outer_item }}'
+          with_items:
+            - "{{ lookup('fileglob', 'tasks/*.yml', wantlist=true) | sort }}"
+          loop_control:
+            loop_var: 'outer_item'
+            extended: true
+
+        - name: 'site | meta | End play | d711aab2'
+          meta: end_play

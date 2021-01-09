@@ -1,0 +1,22 @@
+---
+
+- block:
+    - name: '{{ outer_item.split(".yml")[0] | basename }} | shell | Stream image | {{ lookup("pipe","date") }} | 35f73c89'
+      shell:
+        cmd: "curl --connect-timeout 30 --fail --key /root/.ssh/id_ed25519 --retry 3 --retry-delay 10 --silent --user obfuscated: sftp://obfuscated.domain.tld/~/{{ image_stream_reference }}-{{ node_hardware_type | lower }}.img.lz4.asc | gpg --batch --decrypt --no-verbose --passphrase '{{ lookup('community.general.passwordstore', 'svc.vps.domain.tld/provision/image/gpg-passphrase')}}' --quiet --yes - | lz4 --decompress --stdout - | dd oflag=nocache status=none of={{ node_disk_device_primary }}"
+        warn: false
+
+    - name: '{{ outer_item.split(".yml")[0] | basename }} | command | cryptsetup | isLuks | {{ node_disk_device_primary }}{{ node_disk_partition_primary }} | {{ lookup("pipe","date") }} | cb75aa52'
+      command:
+        cmd: 'cryptsetup isLuks {{ node_disk_device_primary }}{{ node_disk_partition_primary }}'
+
+    - name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.copy | {{ playbook_task_run_file }} | Write task run state | 14578ef2'
+      ansible.builtin.copy:
+        content: '0060'
+        dest: '{{ playbook_task_run_file }}'
+        group: 'root'
+        mode: 0600
+        owner: 'root'
+      changed_when: false
+
+  when: playbook_task_run | int < 0060

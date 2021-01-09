@@ -1,0 +1,11 @@
+---
+
+- name: '{{ outer_item.split(".yml")[0] | basename }} | command | GRUB2 | Generate configuration | BIOS | 28a395f7'
+  command:
+    cmd: '{{ command_grub_mkconfig_command_bios }}'
+  when: node_hardware_type is match('^BIOS$')
+
+- name: '{{ outer_item.split(".yml")[0] | basename }} | command | GRUB2 | Generate configuration | UEFI | c89c2902'
+  command:
+    cmd: '{{ command_grub_mkconfig_command_uefi }}'
+  when: node_hardware_type is match('^EFI$')

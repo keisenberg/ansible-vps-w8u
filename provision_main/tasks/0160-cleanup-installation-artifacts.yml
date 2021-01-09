@@ -1,0 +1,29 @@
+---
+
+- name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.find | /mnt/default/etc/sysconfig/network-scripts | 0286c90e'
+  ansible.builtin.find:
+    paths: '/mnt/default/etc/sysconfig/network-scripts'
+    patterns: '^ifcfg-.*'
+    use_regex: true
+  register: register_0286c90e
+
+- name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.file | /mnt/default/etc/sysconfig/network-scripts | Remove network scripts | 9131e741'
+  ansible.builtin.file:
+    path: '{{ item.path }}'
+    state: 'absent'
+  with_items:
+    - '{{ register_0286c90e.files }}'
+
+- name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.find | /mnt/default/tmp | 5e494a08'
+  ansible.builtin.find:
+    paths: '/mnt/default/tmp'
+    patterns: '^ks-script-.*'
+    use_regex: true
+  register: register_5e494a08
+
+- name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.file | /mnt/default/tmp | Remove kickstart scripts | 4cbb155d'
+  ansible.builtin.file:
+    path: '{{ item.path }}'
+    state: 'absent'
+  with_items:
+    - '{{ register_5e494a08.files }}'

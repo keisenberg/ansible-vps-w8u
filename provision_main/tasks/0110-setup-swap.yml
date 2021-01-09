@@ -1,0 +1,35 @@
+---
+
+- block:
+  - name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.setup | Regather facts | hardware | 394e0872'
+    ansible.builtin.setup:
+      gather_subset:
+        - 'hardware'
+
+  - name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.set_fact | node_disk_device_swap | 2bc49cbd'
+    ansible.builtin.set_fact:
+      node_disk_device_swap: '{{ ansible_devices | dict2items | community.general.json_query("[?value.links.labels[0] == `swap`].key") | join }}'
+
+  - name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.set_fact | node_disk_device_swap_uuid | d6ac6673'
+    ansible.builtin.set_fact:
+      node_disk_device_swap_uuid: '{{ ansible_devices[node_disk_device_swap].links.uuids[0] }}'
+
+  - name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.fail | Conditional | Swap device UUID mismatch | 2ba407f4'
+    ansible.builtin.fail:
+      msg: 'FAIL :: Swap device UUID does not meet string requirements :: {{ node_disk_device_swap_uuid }} :: 2ba407f4'
+    when: node_disk_device_swap_uuid is not regex("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
+
+  - name: '{{ outer_item.split(".yml")[0] | basename }} | command | mkswap | label :: swap | uuid :: {{ node_disk_device_swap_uuid }} | 25a2810e'
+    command:
+      cmd: 'mkswap --label swap --uuid "{{ node_disk_device_swap_uuid }}" /dev/mapper/default-swap'
+
+  - name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.copy | {{ playbook_task_run_file }} | Write task run state | 7238c571'
+    ansible.builtin.copy:
+      content: '0110'
+      dest: '{{ playbook_task_run_file }}'
+      group: 'root'
+      mode: 0600
+      owner: 'root'
+    changed_when: false
+
+  when: playbook_task_run | int < 0110

@@ -1,0 +1,5 @@
+---
+
+- name: '{{ outer_item.split(".yml")[0] | basename }} | command | reboot | 7d14f16d'
+  command:
+    cmd: 'shutdown +1 --reboot'

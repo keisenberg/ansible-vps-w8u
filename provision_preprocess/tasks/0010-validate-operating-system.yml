@@ -1,0 +1,20 @@
+---
+
+- name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.fail | Conditional | Remote node is not compliant | cc7453e1'
+  ansible.builtin.fail:
+    msg: 'FAIL :: Remote node does not meet operating system requirements :: ^CentOS|Debian|Ubuntu$ :: cc7453e1'
+  when: not ansible_distribution is match('^Archlinux|CentOS|Debian|Fedora|Ubuntu$')
+
+- name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.set_fact | command_grub_mkconfig | feed36da'
+  ansible.builtin.set_fact:
+    command_grub_mkconfig_command_bios: 'grub2-mkconfig -o /etc/grub2.cfg'
+    command_grub_mkconfig_command_uefi: 'grub2-mkconfig -o /etc/grub2-efi.cfg'
+    command_grub_reboot_command: 'grub2-reboot "Arch Attended Node Provisioner"'
+  when: ansible_distribution is match('^CentOS|Fedora$')
+
+- name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.set_fact | command_grub_mkconfig | c8cc2dc2'
+  ansible.builtin.set_fact:
+    command_grub_mkconfig_command_bios: 'grub-mkconfig -o /boot/grub/grub.cfg'
+    command_grub_mkconfig_command_uefi: 'grub-mkconfig -o /boot/grub/grub.cfg'
+    command_grub_reboot_command: 'grub-reboot "Arch Attended Node Provisioner"'
+  when: ansible_distribution is match('^Archlinux|Debian|Ubuntu$')

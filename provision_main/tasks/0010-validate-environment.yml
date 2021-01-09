@@ -1,0 +1,6 @@
+---
+
+- name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.fail | Conditional | Hostname requirements | 91588114'
+  ansible.builtin.fail:
+    msg: 'FAIL :: Remote node does not meet hostname requirements :: aanp :: 91588114'
+  when: ansible_hostname is not match('^aanp$')

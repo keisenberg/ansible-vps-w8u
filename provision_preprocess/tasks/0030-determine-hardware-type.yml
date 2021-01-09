@@ -1,0 +1,21 @@
+---
+
+- name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.stat | /sys/firmware/efi | 836176ce'
+  ansible.builtin.stat:
+    path: '/sys/firmware/efi'
+  register: register_1e87b6df
+
+- name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.set_fact | node_hardware_type | 5274bff4'
+  ansible.builtin.set_fact:
+    node_hardware_type: 'BIOS'
+  when: not register_1e87b6df.stat.exists
+
+- name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.set_fact | node_hardware_type | bfaeb11b'
+  ansible.builtin.set_fact:
+    node_hardware_type: 'EFI'
+  when: register_1e87b6df.stat.isdir is defined and register_1e87b6df.stat.isdir
+
+- name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.fail | Conditional | Node hardware type incorrectly set | 088d3597'
+  ansible.builtin.fail:
+    msg: "FAIL :: Could not determine node hardware type :: Fact 'node_hardware_type' is undefined :: 088d3597"
+  when: node_hardware_type is undefined

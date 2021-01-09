@@ -1,0 +1,26 @@
+---
+
+- name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.set_fact | node_disk_device_primary | e3e9d97b'
+  ansible.builtin.set_fact:
+    node_disk_device_primary: '/dev/sda'
+  when: ansible_devices.sda is defined
+
+- name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.set_fact | node_disk_device_primary | 12c6ec5f'
+  ansible.builtin.set_fact:
+    node_disk_device_primary: '/dev/vda'
+  when: ansible_devices.vda is defined
+
+- name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.fail | Conditional | Node primary disk device not set | 4f214846'
+  ansible.builtin.fail:
+    msg: "FAIL :: Could not determine node primary disk device :: Fact 'node_disk_device_primary' is undefined :: 4f214846"
+  when: node_disk_device_primary is undefined
+
+- name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.set_fact | node_disk_partition_primary | 2e00727c'
+  ansible.builtin.set_fact:
+    node_disk_partition_primary: '3'
+  when: node_hardware_type is match('^BIOS$')
+
+- name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.set_fact | node_disk_partition_primary | 7a401126'
+  ansible.builtin.set_fact:
+    node_disk_partition_primary: '4'
+  when: node_hardware_type is match('^EFI$')

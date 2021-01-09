@@ -1,0 +1,9 @@
+---
+
+- name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.copy | /mnt/default/etc/firewalld/zones/public.xml | a42051d4'
+  ansible.builtin.copy:
+    src: 'files/{{ outer_item.split(".yml")[0] | basename }}/public.xml'
+    dest: '/mnt/default/etc/firewalld/zones/public.xml'
+    group: 'root'
+    mode: 0644
+    owner: 'root'

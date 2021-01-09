@@ -1,0 +1,5 @@
+---
+
+- name: '{{ outer_item.split(".yml")[0] | basename }} | command | GRUB2 | Define next boot menu entry | 34a058bd'
+  command:
+    cmd: '{{ command_grub_reboot_command }}'

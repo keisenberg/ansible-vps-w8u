@@ -1,0 +1,30 @@
+---
+
+- block:
+  - name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.lineinfile | /mnt/default/etc/default/grub | ac9399aa'
+    ansible.builtin.lineinfile:
+      backrefs: true
+      line: 'GRUB_CMDLINE_LINUX="\1 ifname=wan:{{ ansible_default_ipv4.macaddress }} ip={{ ansible_default_ipv4.address }}::{{ ansible_default_ipv4.gateway }}:{{ ansible_default_ipv4.netmask }}::wan:off ipv6.disable=1 nameserver=1.1.1.1 nameserver=8.8.4.4 rd.luks.crypttab=0 rd.route={{ ansible_default_ipv4.gateway }}/32::wan"'
+      path: '/mnt/default/etc/default/grub'
+      regexp: '^GRUB_CMDLINE_LINUX="(.*)"$'
+
+  - name: '{{ outer_item.split(".yml")[0] | basename }} | command | chroot | /mnt/default | grub2-mkconfig | b83a0c3c'
+    command:
+      cmd: 'chroot /mnt/default /sbin/grub2-mkconfig -o /etc/grub2.cfg'
+    when: node_hardware_type is match('^BIOS$')
+
+  - name: '{{ outer_item.split(".yml")[0] | basename }} | command | chroot | /mnt/default | grub2-mkconfig | 5397dfdd'
+    command:
+      cmd: 'chroot /mnt/default /sbin/grub2-mkconfig -o /etc/grub2-efi.cfg'
+    when: node_hardware_type is match('^EFI$')
+
+  - name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.copy | {{ playbook_task_run_file }} | Write task run state | 01e5d019'
+    ansible.builtin.copy:
+      content: '0130'
+      dest: '{{ playbook_task_run_file }}'
+      group: 'root'
+      mode: 0600
+      owner: 'root'
+    changed_when: false
+
+  when: playbook_task_run | int < 0130

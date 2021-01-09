@@ -1,0 +1,25 @@
+---
+
+- block:
+  - name: '{{ outer_item.split(".yml")[0] | basename }} | community.crypto.luks_device | Unlock container | {{ node_disk_device_primary }}{{ node_disk_partition_primary }} | 4b6dc819'
+    community.crypto.luks_device:
+      device: '{{ node_disk_device_primary }}{{ node_disk_partition_primary }}'
+      name: 'default'
+      passphrase: "{{ lookup('community.general.passwordstore', 'svc.vps.domain.tld/common/luks/encryption-key')}}"
+      state: 'opened'
+
+  - name: '{{ outer_item.split(".yml")[0] | basename }} | shell | cryptsetup | resize | default | 9d51fa24'
+    shell:
+      cmd: 'cryptsetup resize default'
+      stdin: "{{ lookup('community.general.passwordstore', 'svc.vps.domain.tld/common/luks/encryption-key')}}"
+
+  - name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.copy | {{ playbook_task_run_file }} | Write task run state | 461f0a90'
+    ansible.builtin.copy:
+      content: '0080'
+      dest: '{{ playbook_task_run_file }}'
+      group: 'root'
+      mode: 0600
+      owner: 'root'
+    changed_when: false
+
+  when: playbook_task_run | int < 0080

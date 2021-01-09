@@ -1,0 +1,8 @@
+---
+
+# // TODO :: Add commentary
+ansible_ssh_common_args: '-o StrictHostKeyChecking=false -o UserKnownHostsFile=/dev/null -F /dev/null'
+ansible_user: 'root'
+
+# // TODO :: Add commentary
+ansible_python_interpreter: '/usr/bin/python3'

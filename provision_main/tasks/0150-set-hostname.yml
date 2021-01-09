@@ -1,0 +1,21 @@
+---
+
+- block:
+  - name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.copy | /mnt/default/etc/hostname | Write hostname | 328b61a1'
+    ansible.builtin.copy:
+      content: '{{ host_target }}\n'
+      dest: '/mnt/default/etc/hostname'
+      group: 'root'
+      mode: 0644
+      owner: 'root'
+
+  - name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.copy | {{ playbook_task_run_file }} | Write task run state | 9b9e474a'
+    ansible.builtin.copy:
+      content: '0150'
+      dest: '{{ playbook_task_run_file }}'
+      group: 'root'
+      mode: 0600
+      owner: 'root'
+    changed_when: false
+
+  when: playbook_task_run | int < 0150

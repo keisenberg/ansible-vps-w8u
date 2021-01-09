@@ -1,0 +1,11 @@
+---
+
+- name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.set_fact | directory_boot_mountpoint | b8ac183d'
+  ansible.builtin.set_fact:
+    directory_boot_mountpoint: 'true'
+  when: ansible_mounts | selectattr('mount', 'equalto', '/boot') | list | length > 0
+
+- name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.set_fact | directory_boot_mountpoint | b8ac183d'
+  ansible.builtin.set_fact:
+    directory_boot_mountpoint: 'false'
+  when: ansible_mounts | selectattr('mount', 'equalto', '/boot') | list | length == 0

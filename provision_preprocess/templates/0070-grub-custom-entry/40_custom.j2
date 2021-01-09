@@ -1,0 +1,13 @@
+#!/bin/sh
+exec tail -n +3 $0
+
+menuentry "Arch Attended Node Provisioner" --unrestricted {
+{% if directory_boot_mountpoint == true %}
+    loopback loop /aanp-latest-x86_64.iso
+    linux (loop)/aanp/boot/x86_64/vmlinuz-linux archisobasedir=aanp archisolabel=boot console=ttyS0,115200n8 console=tty0 copytoram img_label=boot img_loop=aanp-latest-x86_64.iso ipv4_address={{ ansible_facts['default_ipv4']['address'] }} ipv4_netmask={{ ansible_facts['default_ipv4']['netmask'] }} ipv4_gateway={{ ansible_facts['default_ipv4']['gateway'] }} ipv6.disable=1 net.ifnames=0
+{% elif directory_boot_mountpoint == false %}
+    loopback loop /boot/aanp-latest-x86_64.iso
+    linux (loop)/aanp/boot/x86_64/vmlinuz-linux archisobasedir=aanp archisolabel=boot console=ttyS0,115200n8 console=tty0 copytoram img_label=boot img_loop=/boot/aanp-latest-x86_64.iso ipv4_address={{ ansible_facts['default_ipv4']['address'] }} ipv4_netmask={{ ansible_facts['default_ipv4']['netmask'] }} ipv4_gateway={{ ansible_facts['default_ipv4']['gateway'] }} ipv6.disable=1 net.ifnames=0
+{% endif %}
+    initrd (loop)/aanp/boot/x86_64/initramfs-linux.img
+}

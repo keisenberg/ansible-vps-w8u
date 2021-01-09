@@ -1,0 +1,23 @@
+---
+
+- block:
+  - name: '{{ outer_item.split(".yml")[0] | basename }} | shell | cryptsetup | luksConvertKey | {{ node_disk_device_primary }}{{ node_disk_partition_primary }} | slot :: 0 | 1750bb27'
+    shell:
+      cmd: 'cryptsetup luksConvertKey --key-slot=0 --pbkdf=argon2id {{ node_disk_device_primary }}{{ node_disk_partition_primary }}'
+      stdin: "{{ lookup('community.general.passwordstore', 'svc.vps.domain.tld/common/luks/encryption-key')}}"
+
+  - name: '{{ outer_item.split(".yml")[0] | basename }} | shell | cryptsetup | luksKillSlot | {{ node_disk_device_primary }}{{ node_disk_partition_primary }} | slot :: 1 | fcd25cb4'
+    shell:
+      cmd: 'cryptsetup luksKillSlot {{ node_disk_device_primary }}{{ node_disk_partition_primary }} 1'
+      stdin: "{{ lookup('community.general.passwordstore', 'svc.vps.domain.tld/common/luks/encryption-key')}}"
+
+  - name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.copy | {{ playbook_task_run_file }} | Write task run state | df239197'
+    ansible.builtin.copy:
+      content: '0180'
+      dest: '{{ playbook_task_run_file }}'
+      group: 'root'
+      mode: 0600
+      owner: 'root'
+    changed_when: false
+
+  when: playbook_task_run | int < 0180

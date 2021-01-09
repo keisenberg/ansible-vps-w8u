@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+## run :: Run (helper)
+
+#
+## Initialization :: Variables :: Dynamic
+
+# Variable modification :: Script :: Short name
+readonly sr_script_sn="$(basename "${BASH_SOURCE[0]}")"
+
+# Variable modification :: Script :: Resolved absolute path name
+readonly sr_script_rapn="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
+
+#
+## Preprocess :: Phase 0 // Validate input
+
+# Validate :: Input variable :: Host target
+if [[ -n "$1" ]]; then
+    # Variable modification :: Host target
+    readonly sr_ht="$1"
+else
+    # Notify :: Validation failure
+    printf '%s\n' "FAIL :: Input missing :: \$1 :: Host target :: $sr_script_sn/$LINENO"
+
+    # Action :: Exit ungracefully
+    exit 1
+fi
+
+# Validate :: Input variable :: Image stream reference
+if [[ -n "$2" ]]; then
+    # Variable modification :: Image stream reference
+    readonly sr_isr="$2"
+else
+    # Notify :: Validation failure
+    printf '%s\n' "FAIL :: Input missing :: \$1 :: Image stream reference :: $sr_script_sn/$LINENO"
+
+    # Action :: Exit ungracefully
+    exit 1
+fi
+
+#
+## Preprocess :: Phase 1 // Validate environment
+
+# Validate :: Directory existence :: Build reference
+if [[ ! -e "$sr_script_rapn/../site.yml" ]]; then
+    # Notify :: Validation failure
+    printf '%s\n' "FAIL :: Playbook missing :: provision_main/site.yml :: $sr_script_rapn/../site.yml :: $sr_script_sn/$LINENO"
+
+    # Action :: Exit ungracefully
+    exit 1
+fi
+
+#
+## Preprocess :: Phase 2 // Authenticate against remote node
+
+# Action :: Authenticate against remote node
+fwknop --access="tcp/22" --destination="$1" --hmac-digest-type="sha256" --key-base64-rijndael="$(pass show svc.vps.domain.tld/provision/fwknop/rijndael-base64)" --key-base64-hmac="$(pass show svc.vps.domain.tld/provision/fwknop/hmac-base64)" --spoof-user="aanp"
+
+# Action :: Allow FWKNOP to process SPA
+sleep 2
+
+#
+## Main :: Phase 0 // Run playbook :: provision_main
+
+# Action :: Run Ansible playbook
+ansible-playbook --extra-vars "host_target=$sr_ht" --extra-vars "image_stream_reference=$sr_isr" --inventory "$sr_ht," "$sr_script_rapn/../site.yml"

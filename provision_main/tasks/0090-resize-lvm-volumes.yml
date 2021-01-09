@@ -1,0 +1,31 @@
+---
+
+- block:
+  - name: '{{ outer_item.split(".yml")[0] | basename }} | community.general.lvg | Resize physical volume | {{ node_disk_device_primary }}{{ node_disk_partition_primary }} | d7c873f1'
+    community.general.lvg:
+      pvresize: true
+      pvs: '/dev/disk/by-id/dm-name-default'
+      vg: 'default'
+
+  - name: '{{ outer_item.split(".yml")[0] | basename }} | community.general.lvol | Resize logical volumes | d3f4b40a'
+    community.general.lvol:
+      lv: '{{ item.lv }}'
+      size: '{{ item.size }}'
+      vg: 'default'
+    with_items:
+      - { lv: 'home', size: '512M' }
+      - { lv: 'root', size: '+30%FREE' }
+      - { lv: 'swap', size: '1G' }
+      - { lv: 'tmp', size: '1G' }
+      - { lv: 'var', size: '+100%FREE' }
+
+  - name: '{{ outer_item.split(".yml")[0] | basename }} | ansible.builtin.copy | {{ playbook_task_run_file }} | Write task run state | 461f0a90'
+    ansible.builtin.copy:
+      content: '0090'
+      dest: '{{ playbook_task_run_file }}'
+      group: 'root'
+      mode: 0600
+      owner: 'root'
+    changed_when: false
+
+  when: playbook_task_run | int < 0090
